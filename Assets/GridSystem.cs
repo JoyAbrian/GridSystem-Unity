@@ -9,6 +9,21 @@ public class GridSystem : MonoBehaviour
     private GameObject ghostObject;
     private HashSet<Vector3> occupiedPositions = new HashSet<Vector3>();
 
+    private void Start()
+    {
+        CreateGhostObject();
+    }
+
+    private void Update()
+    {
+        UpdateGhostPosition();
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            PlaceObject();
+        }
+    }
+
     void CreateGhostObject()
     {
         ghostObject = Instantiate(objectToPlace);
@@ -46,8 +61,41 @@ public class GridSystem : MonoBehaviour
             Vector3 snappedPosition = new Vector3(
                 Mathf.Round(point.x / gridSize) * gridSize,
                 Mathf.Round(point.y / gridSize) * gridSize,
-                Mathf.Round(point.y / gridSize) * gridSize
+                Mathf.Round(point.z / gridSize) * gridSize
             );
+
+            ghostObject.transform.position = snappedPosition;
+
+            if (occupiedPositions.Contains(snappedPosition))
+            {
+                SetGhostColor(Color.red);
+            }
+            else
+            {
+                SetGhostColor(new Color(1f, 1f, 1f, 0.5f));
+            }
+        }
+    }
+
+    void SetGhostColor(Color color)
+    {
+        Renderer[] renderers = ghostObject.GetComponentsInChildren<Renderer>();
+
+        foreach (Renderer renderer in renderers)
+        {
+            Material mat = renderer.material;
+            mat.color = color;
+        }
+    }
+
+    void PlaceObject()
+    {
+        Vector3 placementPosition = ghostObject.transform.position;
+
+        if (!occupiedPositions.Contains(placementPosition))
+        {
+            Instantiate(objectToPlace, placementPosition, Quaternion.identity);
+            occupiedPositions.Add(placementPosition);
         }
     }
 }
